@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Klasyfikacja Dziwek — Mapa Interaktywna</title>
+  <meta name="description" content="Interaktywna cyfrowa klasyfikacja dziwek — satyryczna mapa myśli z humorem.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- INTRO -->
+  <div id="intro-overlay">
+    <h1>Klasyfikacja<br>Dziwek</h1>
+    <p>Mapa myśli dla zaawansowanych.<br>Interaktywna cyfrowizacja oryginalnego rękopisu.</p>
+    <button id="intro-start-btn">Wejdź na mapę →</button>
+    <span class="intro-hint">projekt satyryczny • traktuj bardzo poważnie</span>
+  </div>
+
+  <!-- HEADER -->
+  <header id="header">
+    <div class="header-brand">
+      <h1>🗺️ Klasyfikacja Dziwek</h1>
+      <div class="subtitle">mapa myśli • edycja cyfrowa</div>
+    </div>
+    <nav class="legend" aria-label="Kategorie">
+      <button class="legend-item" data-filter="pink"><span class="legend-dot" style="background:var(--pink)"></span>Klasyczne</button>
+      <button class="legend-item" data-filter="green"><span class="legend-dot" style="background:var(--green)"></span>Charakter.</button>
+      <button class="legend-item" data-filter="orange"><span class="legend-dot" style="background:var(--orange)"></span>Z pracy</button>
+      <button class="legend-item" data-filter="purple"><span class="legend-dot" style="background:var(--purple)"></span>Hybrydowe</button>
+      <button class="legend-item" data-filter=""><span class="legend-dot" style="background:#666"></span>Wszystkie</button>
+    </nav>
+    <div class="controls">
+      <button class="btn" id="search-toggle-btn" aria-label="Szukaj">🔍 Szukaj</button>
+      <button class="btn btn-primary" id="add-node-btn">+ Dodaj dziwkę</button>
+      <button class="btn" id="reset-view-btn">⌖ Reset</button>
+    </div>
+  </header>
+
+  <!-- SEARCH -->
+  <div id="search-box" aria-hidden="true">
+    <input type="text" id="search-input" placeholder="Szukaj dziwki..." autocomplete="off" aria-label="Szukaj węzła">
+    <div id="search-results" role="listbox"></div>
+  </div>
+
+  <!-- ZOOM CONTROLS -->
+  <div id="zoom-controls" aria-label="Kontrolki zoomu">
+    <button class="zoom-btn" id="zoom-in-btn" title="Powiększ">+</button>
+    <button class="zoom-btn" id="zoom-out-btn" title="Pomniejsz">−</button>
+    <button class="zoom-btn" id="fit-btn" title="Dopasuj">FIT</button>
+  </div>
+
+  <!-- CANVAS -->
+  <div id="canvas-wrap">
+    <svg id="map-canvas" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Mapa klasyfikacji dziwek"></svg>
+  </div>
+
+  <!-- DETAIL PANEL -->
+  <aside id="detail-panel" aria-hidden="true">
+    <button class="close-btn" id="close-panel-btn" aria-label="Zamknij">✕</button>
+    <div class="panel-tag" id="panel-tag"></div>
+    <div class="panel-title" id="panel-title"></div>
+    <div class="panel-desc" id="panel-desc"></div>
+    <div class="panel-connections" id="panel-connections">
+      <h4>Powiązane:</h4>
+      <div class="conn-chips" id="conn-chips"></div>
+    </div>
+    <div class="panel-actions" id="panel-actions"></div>
+  </aside>
+
+  <!-- DATA TOOLBAR -->
+  <div id="data-toolbar">
+    <div class="node-count" id="node-count"></div>
+    <button class="data-btn" id="export-btn">💾 Eksportuj JSON</button>
+    <button class="data-btn" id="import-btn">📂 Importuj JSON</button>
+    <input type="file" id="import-file" accept=".json" aria-label="Importuj plik JSON">
+  </div>
+
+  <!-- ADD / EDIT MODAL -->
+  <div class="modal-overlay" id="node-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal">
+      <h2 id="modal-title">+ Dodaj dziwkę</h2>
+      <div class="form-group">
+        <label for="f-name">Nazwa dziwki</label>
+        <input type="text" id="f-name" placeholder="np. DZIWKA INFLUENCERKA" maxlength="40">
+      </div>
+      <div class="form-group">
+        <label for="f-desc">Opis (co ją definiuje)</label>
+        <textarea id="f-desc" rows="3" placeholder="np. Robi relację z każdego wkurwiającego momentu."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Kategoria</label>
+        <div class="radio-group" id="cat-radio" role="radiogroup">
+          <label class="radio-card checked" data-cat="pink" style="border-color:#ff6b9d">
+            <input type="radio" name="cat" value="pink" checked>
+            <span class="rc-dot" style="background:#ff6b9d"></span>🌸 Klasyczna
+          </label>
+          <label class="radio-card" data-cat="green" style="border-color:transparent">
+            <input type="radio" name="cat" value="green">
+            <span class="rc-dot" style="background:#4ecdc4"></span>🟢 Charakter.
+          </label>
+          <label class="radio-card" data-cat="orange" style="border-color:transparent">
+            <input type="radio" name="cat" value="orange">
+            <span class="rc-dot" style="background:#ff9f43"></span>🟠 Z pracy
+          </label>
+          <label class="radio-card" data-cat="purple" style="border-color:transparent">
+            <input type="radio" name="cat" value="purple">
+            <span class="rc-dot" style="background:#a29bfe"></span>💜 Hybryda
+          </label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="f-parent">Połącz z węzłem</label>
+        <select id="f-parent"><option value="">— brak połączenia —</option></select>
+      </div>
+      <div class="form-group">
+        <label>Kolor węzła</label>
+        <div class="color-preview" id="color-picker" role="group" aria-label="Wybór koloru">
+          <button class="color-swatch selected" data-color="#ff6b9d" style="background:#ff6b9d" aria-label="Różowy"></button>
+          <button class="color-swatch" data-color="#ff9fb3" style="background:#ff9fb3" aria-label="Jasny różowy"></button>
+          <button class="color-swatch" data-color="#d63da8" style="background:#d63da8" aria-label="Fiol-różowy"></button>
+          <button class="color-swatch" data-color="#4ecdc4" style="background:#4ecdc4" aria-label="Turkusowy"></button>
+          <button class="color-swatch" data-color="#55efc4" style="background:#55efc4" aria-label="Miętowy"></button>
+          <button class="color-swatch" data-color="#ff9f43" style="background:#ff9f43" aria-label="Pomarańczowy"></button>
+          <button class="color-swatch" data-color="#a29bfe" style="background:#a29bfe" aria-label="Fioletowy"></button>
+          <button class="color-swatch" data-color="#fd79a8" style="background:#fd79a8" aria-label="Łososiowy"></button>
+          <button class="color-swatch" data-color="#fdcb6e" style="background:#fdcb6e" aria-label="Żółty"></button>
+          <button class="color-swatch" data-color="#e17055" style="background:#e17055" aria-label="Ceglasty"></button>
+          <button class="color-swatch" data-color="#74b9ff" style="background:#74b9ff" aria-label="Niebieski"></button>
+          <button class="color-swatch" data-color="#b2bec3" style="background:#b2bec3" aria-label="Szary"></button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" id="modal-cancel-btn">Anuluj</button>
+        <button class="btn btn-primary" id="modal-save-btn">Zapisz dziwkę ✓</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
